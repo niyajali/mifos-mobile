@@ -163,3 +163,6 @@ object DateHelper {
         return sdf.format(timeInMillis?.let { Date(it) })
     }
 }
+
+fun getTodayFormatted(): String =
+    SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Calendar.getInstance().time)
