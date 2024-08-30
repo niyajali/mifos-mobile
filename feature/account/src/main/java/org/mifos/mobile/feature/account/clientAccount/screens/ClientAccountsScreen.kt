@@ -1,4 +1,13 @@
-package org.mifos.mobile.feature.account.client_account.screens
+/*
+ * Copyright 2024 Mifos Initiative
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * See https://github.com/openMF/mobile-mobile/blob/master/LICENSE.md
+ */
+package org.mifos.mobile.feature.account.clientAccount.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -18,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.mifos.mobile.core.common.Constants
@@ -29,24 +37,28 @@ import org.mifos.mobile.core.designsystem.icons.MifosIcons
 import org.mifos.mobile.core.designsystem.theme.MifosMobileTheme
 import org.mifos.mobile.core.model.entity.CheckboxStatus
 import org.mifos.mobile.core.model.enums.AccountType
+import org.mifos.mobile.core.ui.utils.DevicePreviews
 import org.mifos.mobile.feature.account.R
 import org.mifos.mobile.feature.account.account.screens.AccountsScreen
-import org.mifos.mobile.feature.account.client_account.utils.ClientAccountFilterDialog
-import org.mifos.mobile.feature.account.client_account.utils.ClientAccountsScreenTopBar
+import org.mifos.mobile.feature.account.clientAccount.utils.ClientAccountFilterDialog
+import org.mifos.mobile.feature.account.clientAccount.utils.ClientAccountsScreenTopBar
 import org.mifos.mobile.feature.account.viewmodel.AccountsViewModel
 
 @Composable
-fun ClientAccountsScreen(
-    viewModel: AccountsViewModel = hiltViewModel(),
-    navigateBack: () -> Unit?,
+internal fun ClientAccountsScreen(
+    navigateBack: () -> Unit,
     navigateToLoanApplicationScreen: () -> Unit,
     navigateToSavingsApplicationScreen: () -> Unit,
-    onItemClick: (accountType: AccountType, accountId: Long) -> Unit
+    onItemClick: (accountType: AccountType, accountId: Long) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: AccountsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+
     var isDialogActive by rememberSaveable { mutableStateOf(false) }
-    val accountType by viewModel.accountType.collectAsStateWithLifecycle()
     var currentPage by rememberSaveable { mutableIntStateOf(0) }
+
+    val accountType by viewModel.accountType.collectAsStateWithLifecycle()
     val filterList by viewModel.filterList.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = accountType) {
@@ -62,63 +74,65 @@ fun ClientAccountsScreen(
     }
 
     ClientAccountsScreen(
-        navigateBack = navigateBack,
-        navigateToLoanApplicationScreen = navigateToLoanApplicationScreen,
-        navigateToSavingsApplicationScreen = navigateToSavingsApplicationScreen,
-        onItemClick = { accountType, accountId -> onItemClick.invoke(accountType, accountId) },
-        cancelFilterDialog = { isDialogActive = false },
+        currentPage = currentPage,
+        isDialogActive = isDialogActive,
+        filterList = filterList,
+        openSearch = { isDialogActive = true },
+        closeSearch = viewModel::stoppedSearching,
+        onSearchQueryChange = viewModel::updateSearchQuery,
+        pageChanged = { index -> currentPage = index },
         clearFilter = {
             viewModel.setFilterList(
                 checkBoxList = emptyList(),
                 currentPage = currentPage,
-                context = context
+                context = context,
             )
             isDialogActive = false
         },
+        cancelFilterDialog = { isDialogActive = false },
         filterAccounts = {
             viewModel.setFilterList(checkBoxList = it, currentPage = currentPage, context = context)
             isDialogActive = false
         },
-        onSearchQueryChange = { viewModel.updateSearchQuery(query = it) },
-        openSearch = { isDialogActive = true },
-        closeSearch = { viewModel.stoppedSearching() },
-        currentPage = currentPage,
-        pageChanged = { index -> currentPage = index },
-        isDialogActive = isDialogActive,
-        filterList = filterList,
+        modifier = modifier,
+        navigateBack = navigateBack,
+        navigateToLoanApplicationScreen = navigateToLoanApplicationScreen,
+        navigateToSavingsApplicationScreen = navigateToSavingsApplicationScreen,
+        onItemClick = onItemClick,
     )
 }
 
 @Composable
-fun ClientAccountsScreen(
-    navigateBack: () -> Unit?,
+private fun ClientAccountsScreen(
+    currentPage: Int,
+    isDialogActive: Boolean,
+    filterList: List<CheckboxStatus>,
+    openSearch: () -> Unit,
+    closeSearch: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    pageChanged: (index: Int) -> Unit,
+    clearFilter: () -> Unit,
+    cancelFilterDialog: () -> Unit,
+    filterAccounts: (checkBoxList: List<CheckboxStatus>) -> Unit,
+    navigateBack: () -> Unit,
     navigateToLoanApplicationScreen: () -> Unit,
     navigateToSavingsApplicationScreen: () -> Unit,
     onItemClick: (accountType: AccountType, accountId: Long) -> Unit,
-    cancelFilterDialog: () -> Unit,
-    clearFilter: () -> Unit,
-    filterAccounts: (checkBoxList: List<CheckboxStatus>) -> Unit,
-    onSearchQueryChange: (String) -> Unit,
-    openSearch: () -> Unit,
-    closeSearch: () -> Unit,
-    currentPage: Int,
-    pageChanged: (index: Int) -> Unit,
-    isDialogActive: Boolean,
-    filterList: List<CheckboxStatus>,
+    modifier: Modifier = Modifier,
 ) {
     val tabs = listOf(
-        stringResource(id = R.string.savings_account),
-        stringResource(id = R.string.loan_account),
-        stringResource(id = R.string.share_account)
+        stringResource(id = R.string.feature_account_savings_account),
+        stringResource(id = R.string.feature_account_loan_account),
+        stringResource(id = R.string.feature_account_share_account),
     )
 
     if (isDialogActive) {
         ClientAccountFilterDialog(
+            title = tabs[currentPage],
             filterList = filterList,
             cancelDialog = { cancelFilterDialog.invoke() },
             clearFilter = { clearFilter.invoke() },
             updateFilterList = { list -> filterAccounts(list) },
-            title = tabs[currentPage]
         )
     }
 
@@ -126,12 +140,11 @@ fun ClientAccountsScreen(
         topBar = {
             ClientAccountsScreenTopBar(
                 navigateBack = navigateBack,
-                onChange = { onSearchQueryChange(it) },
-                clickDialog = { openSearch.invoke() },
-                closeSearch = { closeSearch.invoke() }
+                onChange = onSearchQueryChange,
+                clickDialog = openSearch,
+                closeSearch = closeSearch,
             )
         },
-
         floatingActionButtonContent = FloatingActionButtonContent(
             onClick = {
                 when (currentPage) {
@@ -144,119 +157,115 @@ fun ClientAccountsScreen(
                 Icon(
                     imageVector = MifosIcons.Add,
                     contentDescription = "Create Account",
-                    tint = if (isSystemInDarkTheme()) Color.Black else Color.White
+                    tint = if (isSystemInDarkTheme()) Color.Black else Color.White,
                 )
-            }
+            },
         ),
-
         content = {
             ClientAccountsTabRow(
                 modifier = Modifier.padding(it),
-                pageChanged = { index -> pageChanged.invoke(index) },
-                onItemClick = { accountType, accountId ->
-                    onItemClick.invoke(
-                        accountType,
-                        accountId
-                    )
-                },
-                currentPage = currentPage
+                pageChanged = pageChanged,
+                onItemClick = onItemClick,
+                currentPage = currentPage,
             )
-        }
+        },
+        modifier = modifier,
     )
 }
 
-
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ClientAccountsTabRow(
-    modifier: Modifier,
+private fun ClientAccountsTabRow(
+    currentPage: Int,
     pageChanged: (index: Int) -> Unit,
     onItemClick: (accountType: AccountType, accountId: Long) -> Unit,
-    currentPage: Int
+    modifier: Modifier = Modifier,
 ) {
-    var currentPage by remember { mutableIntStateOf(currentPage) }
+    var page by remember { mutableIntStateOf(currentPage) }
     val pagerState = rememberPagerState(pageCount = { 3 })
+
     val tabs = listOf(
-        stringResource(id = R.string.savings),
-        stringResource(id = R.string.loan),
-        stringResource(id = R.string.share)
+        stringResource(id = R.string.feature_account_savings),
+        stringResource(id = R.string.feature_account_loan),
+        stringResource(id = R.string.feature_account_share),
     )
 
-    LaunchedEffect(key1 = currentPage) {
-        pageChanged(currentPage)
-        pagerState.animateScrollToPage(currentPage)
+    LaunchedEffect(key1 = page) {
+        pageChanged(page)
+        pagerState.animateScrollToPage(page)
     }
 
-    LaunchedEffect(key1 = pagerState.currentPage, pagerState.isScrollInProgress) {
-        currentPage = if (!pagerState.isScrollInProgress)
+    LaunchedEffect(
+        key1 = pagerState.currentPage,
+        key2 = pagerState.isScrollInProgress,
+    ) {
+        page = if (!pagerState.isScrollInProgress) {
             pagerState.currentPage
-        else {
+        } else {
             pagerState.targetPage
         }
     }
 
     MifosTabPager(
         pagerState = pagerState,
-        currentPage = currentPage,
+        currentPage = page,
         modifier = modifier,
         tabs = tabs,
-        setCurrentPage = { currentPage = it }
+        setCurrentPage = { page = it },
     ) {
-        when (currentPage) {
+        when (page) {
             0 -> AccountsScreen(
                 accountType = Constants.SAVINGS_ACCOUNTS,
-                onItemClick = { accType, accountId ->
+                onItemClick = { _, accountId ->
                     onItemClick.invoke(
                         AccountType.SAVINGS,
-                        accountId
+                        accountId,
                     )
-                }
+                },
             )
 
             1 -> AccountsScreen(
                 accountType = Constants.LOAN_ACCOUNTS,
-                onItemClick = { accType, accountId ->
+                onItemClick = { _, accountId ->
                     onItemClick.invoke(
                         AccountType.LOAN,
-                        accountId
+                        accountId,
                     )
-                }
+                },
             )
 
             2 -> AccountsScreen(
                 accountType = Constants.SHARE_ACCOUNTS,
-                onItemClick = { accType, accountId ->
+                onItemClick = { _, accountId ->
                     onItemClick.invoke(
                         AccountType.SHARE,
-                        accountId
+                        accountId,
                     )
-                }
+                },
             )
         }
     }
 }
 
-
-@Preview(showSystemUi = true)
+@DevicePreviews
 @Composable
-fun ClientAccountsScreenPreview() {
+private fun ClientAccountsScreenPreview() {
     MifosMobileTheme {
         ClientAccountsScreen(
-            navigateBack = {},
-            onItemClick = { accountType, accountId -> },
-            cancelFilterDialog = { },
-            clearFilter = { },
-            filterAccounts = { },
-            onSearchQueryChange = { },
-            openSearch = { },
-            closeSearch = { },
             currentPage = 0,
-            pageChanged = { index -> },
             isDialogActive = false,
             filterList = listOf(),
+            openSearch = { },
+            closeSearch = { },
+            onSearchQueryChange = { },
+            pageChanged = { },
+            clearFilter = { },
+            cancelFilterDialog = { },
+            filterAccounts = { },
+            navigateBack = {},
             navigateToLoanApplicationScreen = {},
-            navigateToSavingsApplicationScreen = {}
+            navigateToSavingsApplicationScreen = {},
+            onItemClick = { _, _ -> },
         )
     }
 }
