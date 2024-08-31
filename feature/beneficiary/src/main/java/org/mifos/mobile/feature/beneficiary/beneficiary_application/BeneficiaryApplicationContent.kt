@@ -22,7 +22,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.mifos.mobile.core.designsystem.components.MifosOutlinedTextField
-import org.mifos.mobile.core.designsystem.components.MifosTextButton
+import org.mifos.mobile.core.designsystem.components.MifosButton
 import org.mifos.mobile.core.designsystem.theme.MifosMobileTheme
 import org.mifos.mobile.core.model.entity.beneficiary.Beneficiary
 import org.mifos.mobile.core.model.entity.beneficiary.BeneficiaryPayload
@@ -145,7 +145,7 @@ fun BeneficiaryApplicationContent(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        MifosTextButton(
+        MifosButton(
             modifier = Modifier.fillMaxWidth(),
             textResId = R.string.submit_beneficiary,
             onClick = {

@@ -31,15 +31,29 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 
 @Composable
-fun MifosTextButton(
+fun MifosButton(
     @StringRes
     textResId: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = ButtonDefaults. shape,
+    colors: ButtonColors = ButtonDefaults. buttonColors(),
+    elevation: ButtonElevation? = ButtonDefaults. buttonElevation(),
+    border: BorderStroke? = null,
+    contentPadding: PaddingValues = ButtonDefaults. ContentPadding,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     Button(
         modifier = modifier,
         onClick = onClick,
+        enabled = enabled,
+        shape = shape,
+        colors = colors,
+        elevation = elevation,
+        border = border,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
         content = {
             Text(text = stringResource(id = textResId))
         },
