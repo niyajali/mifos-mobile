@@ -1,4 +1,13 @@
-package org.mifos.mobile.feature.beneficiary.beneficiary_list
+/*
+ * Copyright 2024 Mifos Initiative
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * See https://github.com/openMF/mobile-mobile/blob/master/LICENSE.md
+ */
+package org.mifos.mobile.feature.beneficiary.beneficiaryList
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,19 +19,23 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.mifos.mobile.core.data.repository.BeneficiaryRepository
 import org.mifos.mobile.core.model.entity.beneficiary.Beneficiary
+import org.mifos.mobile.feature.beneficiary.beneficiaryList.BeneficiaryListUiState.Loading
 import javax.inject.Inject
 
 @HiltViewModel
-class BeneficiaryListViewModel @Inject constructor(private val beneficiaryRepositoryImp: BeneficiaryRepository) :
-    ViewModel() {
+internal class BeneficiaryListViewModel @Inject constructor(
+    private val beneficiaryRepositoryImp: BeneficiaryRepository,
+) : ViewModel() {
 
-    private val _beneficiaryListUiState = MutableStateFlow<BeneficiaryListUiState>(
-        BeneficiaryListUiState.Loading
-    )
+    private val _beneficiaryListUiState = MutableStateFlow<BeneficiaryListUiState>(Loading)
     val beneficiaryListUiState: StateFlow<BeneficiaryListUiState> get() = _beneficiaryListUiState
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> get() = _isRefreshing.asStateFlow()
+
+    init {
+        loadBeneficiaries()
+    }
 
     fun refresh() {
         viewModelScope.launch {
@@ -33,10 +46,10 @@ class BeneficiaryListViewModel @Inject constructor(private val beneficiaryReposi
 
     fun loadBeneficiaries() {
         viewModelScope.launch {
-            _beneficiaryListUiState.value = BeneficiaryListUiState.Loading
+            _beneficiaryListUiState.value = Loading
             beneficiaryRepositoryImp.beneficiaryList().catch {
                 _beneficiaryListUiState.value = BeneficiaryListUiState.Error(it.message)
-            }.collect { beneficiaryList->
+            }.collect { beneficiaryList ->
                 _beneficiaryListUiState.value = BeneficiaryListUiState.Success(beneficiaryList)
                 _isRefreshing.emit(false)
             }
@@ -44,10 +57,8 @@ class BeneficiaryListViewModel @Inject constructor(private val beneficiaryReposi
     }
 }
 
-
-sealed class BeneficiaryListUiState{
+internal sealed class BeneficiaryListUiState {
     data object Loading : BeneficiaryListUiState()
     data class Error(val message: String?) : BeneficiaryListUiState()
     data class Success(val beneficiaries: List<Beneficiary>) : BeneficiaryListUiState()
 }
-

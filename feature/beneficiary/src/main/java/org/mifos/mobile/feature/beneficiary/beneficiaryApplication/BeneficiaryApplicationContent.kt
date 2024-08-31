@@ -1,4 +1,13 @@
-package org.mifos.mobile.feature.beneficiary.beneficiary_application
+/*
+ * Copyright 2024 Mifos Initiative
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * See https://github.com/openMF/mobile-mobile/blob/master/LICENSE.md
+ */
+package org.mifos.mobile.feature.beneficiary.beneficiaryApplication
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,55 +28,80 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.mifos.mobile.core.designsystem.components.MifosOutlinedTextField
 import org.mifos.mobile.core.designsystem.components.MifosButton
+import org.mifos.mobile.core.designsystem.components.MifosOutlinedTextField
 import org.mifos.mobile.core.designsystem.theme.MifosMobileTheme
 import org.mifos.mobile.core.model.entity.beneficiary.Beneficiary
 import org.mifos.mobile.core.model.entity.beneficiary.BeneficiaryPayload
 import org.mifos.mobile.core.model.entity.templates.beneficiary.BeneficiaryTemplate
 import org.mifos.mobile.core.model.enums.BeneficiaryState
 import org.mifos.mobile.core.ui.component.MifosDropDownTextField
+import org.mifos.mobile.core.ui.utils.DevicePreviews
 import org.mifos.mobile.feature.beneficiary.R
 
 @Composable
-fun BeneficiaryApplicationContent(
+@Suppress("CyclomaticComplexMethod", "ComplexCondition")
+internal fun BeneficiaryApplicationContent(
     prefilledBeneficiary: Beneficiary?,
     beneficiaryTemplate: BeneficiaryTemplate,
     beneficiaryState: BeneficiaryState,
-    onSubmit: (BeneficiaryPayload) -> Unit
+    onSubmit: (BeneficiaryPayload) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val scrollState = rememberScrollState()
-
-    var accountType by rememberSaveable { mutableIntStateOf(prefilledBeneficiary?.accountType?.id ?: -1) }
+    var accountType by rememberSaveable {
+        mutableIntStateOf(
+            prefilledBeneficiary?.accountType?.id ?: -1,
+        )
+    }
     var accountTypeError by rememberSaveable { mutableStateOf<Int?>(null) }
 
-    var accountNumber by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(prefilledBeneficiary?.accountNumber ?: "")) }
+    var accountNumber by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(prefilledBeneficiary?.accountNumber ?: ""),
+        )
+    }
     var accountNumberError by rememberSaveable { mutableStateOf<Int?>(null) }
 
-    var officeName by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(prefilledBeneficiary?.officeName ?: "")) }
+    var officeName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(prefilledBeneficiary?.officeName ?: ""),
+        )
+    }
     var officeNameError by rememberSaveable { mutableStateOf<Int?>(null) }
 
-    var transferLimit by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(prefilledBeneficiary?.transferLimit?.toString() ?: "")) }
+    var transferLimit by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(prefilledBeneficiary?.transferLimit?.toString() ?: ""),
+        )
+    }
     var transferLimitError by rememberSaveable { mutableStateOf<Int?>(null) }
 
-    var beneficiaryName by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(prefilledBeneficiary?.name ?: "")) }
+    var beneficiaryName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(prefilledBeneficiary?.name ?: ""),
+        )
+    }
     var beneficiaryNameError by rememberSaveable { mutableStateOf<Int?>(null) }
 
     fun validateFields() {
         if (beneficiaryState != BeneficiaryState.UPDATE) {
             accountTypeError = if (accountType == -1) R.string.select_account_type else null
-            accountNumberError = if (accountNumber.text.trim().isEmpty()) R.string.enter_account_number else null
-            officeNameError = if (officeName.text.trim().isEmpty()) R.string.enter_office_name else null
+            accountNumberError =
+                if (accountNumber.text.trim().isEmpty()) R.string.enter_account_number else null
+            officeNameError =
+                if (officeName.text.trim().isEmpty()) R.string.enter_office_name else null
         }
         transferLimitError = when {
             transferLimit.text.trim().isEmpty() -> R.string.enter_transfer_limit
             transferLimit.text.any { it.isLetter() } -> R.string.invalid_amount
-            transferLimit.text.toDoubleOrNull()?.let { it % 1 != 0.0 } == true -> R.string.invalid_amount
+            transferLimit.text.toDoubleOrNull()
+                ?.let { it % 1 != 0.0 } == true -> R.string.invalid_amount
+
             else -> null
         }
-        beneficiaryNameError = if (beneficiaryName.text.trim().isEmpty()) R.string.enter_beneficiary_name else null
+        beneficiaryNameError =
+            if (beneficiaryName.text.trim().isEmpty()) R.string.enter_beneficiary_name else null
     }
 
     LaunchedEffect(key1 = accountType) {
@@ -90,18 +124,23 @@ fun BeneficiaryApplicationContent(
         beneficiaryNameError = null
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
-        .padding(16.dp)
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
     ) {
         MifosDropDownTextField(
-            optionsList = beneficiaryTemplate.accountTypeOptions?.mapNotNull { it.value } ?: listOf(),
+            optionsList = beneficiaryTemplate.accountTypeOptions?.mapNotNull { it.value }
+                ?: listOf(),
             labelResId = R.string.select_account_type,
-            onClick = { index, _ -> accountType = beneficiaryTemplate.accountTypeOptions?.filter{ it.value != null }?.get(index)?.id ?: -1 },
+            onClick = { index, _ ->
+                accountType = beneficiaryTemplate.accountTypeOptions?.filter { it.value != null }
+                    ?.get(index)?.id ?: -1
+            },
             error = accountTypeError != null && beneficiaryState != BeneficiaryState.UPDATE,
             isEnabled = beneficiaryState != BeneficiaryState.UPDATE,
-            supportingText = accountTypeError?.let { stringResource(id = it) }
+            supportingText = accountTypeError?.let { stringResource(id = it) },
         )
 
         MifosOutlinedTextField(
@@ -111,7 +150,7 @@ fun BeneficiaryApplicationContent(
             label = R.string.account_number,
             error = accountNumberError != null && beneficiaryState != BeneficiaryState.UPDATE,
             enabled = beneficiaryState != BeneficiaryState.UPDATE,
-            supportingText = accountNumberError?.let { stringResource(id = it) }
+            supportingText = accountNumberError?.let { stringResource(id = it) },
         )
 
         MifosOutlinedTextField(
@@ -121,7 +160,7 @@ fun BeneficiaryApplicationContent(
             label = R.string.office_name,
             error = officeNameError != null && beneficiaryState != BeneficiaryState.UPDATE,
             enabled = beneficiaryState != BeneficiaryState.UPDATE,
-            supportingText = officeNameError?.let { stringResource(id = it) }
+            supportingText = officeNameError?.let { stringResource(id = it) },
         )
 
         MifosOutlinedTextField(
@@ -131,7 +170,7 @@ fun BeneficiaryApplicationContent(
             label = R.string.transfer_limit,
             keyboardType = KeyboardType.Number,
             error = transferLimitError != null,
-            supportingText = transferLimitError?.let { stringResource(id = it) }
+            supportingText = transferLimitError?.let { stringResource(id = it) },
         )
 
         MifosOutlinedTextField(
@@ -140,7 +179,7 @@ fun BeneficiaryApplicationContent(
             onValueChange = { beneficiaryName = it },
             label = R.string.beneficiary_name,
             error = beneficiaryNameError != null,
-            supportingText = beneficiaryNameError?.let { stringResource(id = it) }
+            supportingText = beneficiaryNameError?.let { stringResource(id = it) },
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -150,26 +189,32 @@ fun BeneficiaryApplicationContent(
             textResId = R.string.submit_beneficiary,
             onClick = {
                 validateFields()
-                if ((beneficiaryState != BeneficiaryState.UPDATE && accountTypeError == null && accountNumberError == null && officeNameError == null) &&
-                    transferLimitError == null && beneficiaryNameError == null) {
+                if ((
+                        beneficiaryState != BeneficiaryState.UPDATE && accountTypeError == null &&
+                            accountNumberError == null && officeNameError == null
+                        ) &&
+                    transferLimitError == null && beneficiaryNameError == null
+                ) {
                     onSubmit(
                         BeneficiaryPayload(
                             name = beneficiaryName.text,
                             accountNumber = accountNumber.text,
                             transferLimit = transferLimit.text.toFloat(),
                             officeName = officeName.text,
-                            accountType = accountType
-                        )
+                            accountType = accountType,
+                        ),
                     )
-                } else if (beneficiaryState == BeneficiaryState.UPDATE && transferLimitError == null && beneficiaryNameError == null) {
+                } else if (beneficiaryState == BeneficiaryState.UPDATE &&
+                    transferLimitError == null && beneficiaryNameError == null
+                ) {
                     onSubmit(
                         BeneficiaryPayload(
                             name = beneficiaryName.text,
                             accountNumber = accountNumber.text,
                             transferLimit = transferLimit.text.toFloat(),
                             officeName = officeName.text,
-                            accountType = accountType
-                        )
+                            accountType = accountType,
+                        ),
                     )
                 }
             },
@@ -177,10 +222,9 @@ fun BeneficiaryApplicationContent(
     }
 }
 
-
 @Composable
-@Preview(showSystemUi = true)
-fun BeneficiaryApplicationContentPreview() {
+@DevicePreviews
+private fun BeneficiaryApplicationContentPreview() {
     MifosMobileTheme {
         BeneficiaryApplicationContent(
             prefilledBeneficiary = null,

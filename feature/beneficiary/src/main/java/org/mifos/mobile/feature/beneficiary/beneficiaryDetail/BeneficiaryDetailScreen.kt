@@ -1,12 +1,18 @@
-package org.mifos.mobile.feature.beneficiary.beneficiary_detail
+/*
+ * Copyright 2024 Mifos Initiative
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * See https://github.com/openMF/mobile-mobile/blob/master/LICENSE.md
+ */
+package org.mifos.mobile.feature.beneficiary.beneficiaryDetail
 
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,22 +32,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.mifos.mobile.core.designsystem.icons.MifosIcons
 import org.mifos.mobile.core.designsystem.theme.MifosMobileTheme
 import org.mifos.mobile.core.model.entity.beneficiary.Beneficiary
 import org.mifos.mobile.core.ui.component.MifosAlertDialog
 import org.mifos.mobile.core.ui.component.MifosProgressIndicatorOverlay
+import org.mifos.mobile.core.ui.utils.DevicePreviews
 import org.mifos.mobile.feature.beneficiary.R
 
 @Composable
-fun BeneficiaryDetailScreen(
-    viewModel: BeneficiaryDetailViewModel = hiltViewModel(),
+internal fun BeneficiaryDetailScreen(
     navigateBack: () -> Unit,
     updateBeneficiary: (beneficiary: Beneficiary?) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: BeneficiaryDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.beneficiaryDetailsUiStates.collectAsStateWithLifecycle()
     val beneficiary by viewModel.beneficiary.collectAsStateWithLifecycle()
@@ -50,22 +58,22 @@ fun BeneficiaryDetailScreen(
         beneficiary = beneficiary,
         uiState = uiState,
         navigateBack = navigateBack,
+        modifier = modifier,
         updateBeneficiary = {
-            updateBeneficiary(viewModel.getBeneficiary())
+            updateBeneficiary(beneficiary)
         },
-        deleteBeneficiary = {
-            viewModel.deleteBeneficiary(it)
-        }
+        deleteBeneficiary = viewModel::deleteBeneficiary,
     )
 }
 
 @Composable
-fun BeneficiaryDetailScreen(
+private fun BeneficiaryDetailScreen(
     beneficiary: Beneficiary?,
     uiState: BeneficiaryDetailsUiState,
     navigateBack: () -> Unit,
     updateBeneficiary: () -> Unit,
     deleteBeneficiary: (id: Long?) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var openDropdown by rememberSaveable { mutableStateOf(false) }
     var showAlert by rememberSaveable { mutableStateOf(false) }
@@ -88,7 +96,7 @@ fun BeneficiaryDetailScreen(
             },
             confirmationText = context.getString(R.string.delete),
             dialogTitle = context.getString(R.string.delete_beneficiary),
-            dialogText = context.getString(R.string.delete_beneficiary_confirmation) + "?"
+            dialogText = context.getString(R.string.delete_beneficiary_confirmation) + "?",
         )
     }
 
@@ -103,15 +111,16 @@ fun BeneficiaryDetailScreen(
                 },
                 showAlert = {
                     showAlert = true
-                }
+                },
             )
-        }
+        },
+        modifier = modifier,
     ) {
         Box(
-            modifier = Modifier.padding(it)
+            modifier = Modifier.padding(it),
         ) {
             BeneficiaryDetailContent(
-                beneficiary = beneficiary
+                beneficiary = beneficiary,
             )
 
             when (uiState) {
@@ -125,7 +134,7 @@ fun BeneficiaryDetailScreen(
                     Toast.makeText(
                         context,
                         stringResource(id = R.string.beneficiary_deleted_successfully),
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                     navigateBack.invoke()
                 }
@@ -140,7 +149,6 @@ fun BeneficiaryDetailScreen(
                         showBeneficiaryNullError = false
                     }
                 }
-
             }
         }
     }
@@ -152,7 +160,8 @@ private fun BeneficiaryDetailTopAppBar(
     navigateBack: () -> Unit,
     updateBeneficiaryClicked: () -> Unit,
     updateDropdownValue: (value: Boolean) -> Boolean,
-    showAlert: () -> Unit
+    showAlert: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var openDropdown by rememberSaveable {
         mutableStateOf(false)
@@ -160,10 +169,11 @@ private fun BeneficiaryDetailTopAppBar(
 
     TopAppBar(
         title = { Text(text = stringResource(id = R.string.beneficiary_detail)) },
+        modifier = modifier,
         navigationIcon = {
             IconButton(onClick = { navigateBack.invoke() }) {
                 Icon(
-                    imageVector = Icons.Filled.ArrowBack,
+                    imageVector = MifosIcons.ArrowBack,
                     contentDescription = "Back Arrow",
                     tint = if (isSystemInDarkTheme()) Color.White else Color.Black,
                 )
@@ -171,61 +181,56 @@ private fun BeneficiaryDetailTopAppBar(
         },
         actions = {
             IconButton(
-                onClick = { openDropdown = updateDropdownValue.invoke(!openDropdown) }
+                onClick = { openDropdown = updateDropdownValue.invoke(!openDropdown) },
             ) {
                 Icon(
-                    imageVector = Icons.Default.MoreVert,
+                    imageVector = MifosIcons.MoreVert,
                     contentDescription = "More",
-                    tint = if (isSystemInDarkTheme()) Color.White else Color.Black,
                 )
             }
 
-            if (openDropdown) {
-                DropdownMenu(
-                    expanded = openDropdown,
-                    onDismissRequest = {
+            DropdownMenu(
+                expanded = openDropdown,
+                onDismissRequest = {
+                    openDropdown = updateDropdownValue.invoke(!openDropdown)
+                },
+            ) {
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(id = R.string.update_beneficiary)) },
+                    onClick = {
                         openDropdown = updateDropdownValue.invoke(!openDropdown)
-                    }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(text = stringResource(id = R.string.update_beneficiary)) },
-                        onClick = {
-                            openDropdown = updateDropdownValue.invoke(!openDropdown)
-                            updateBeneficiaryClicked.invoke()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(text = stringResource(id = R.string.delete_beneficiary)) },
-                        onClick = {
-                            openDropdown = updateDropdownValue.invoke(!openDropdown)
-                            showAlert.invoke()
-                        }
-                    )
-                }
+                        updateBeneficiaryClicked.invoke()
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(id = R.string.delete_beneficiary)) },
+                    onClick = {
+                        openDropdown = updateDropdownValue.invoke(!openDropdown)
+                        showAlert.invoke()
+                    },
+                )
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = if (isSystemInDarkTheme()) Color(0xFF1B1B1F)
-            else Color(0xFFFEFBFF)
-        )
+        colors = TopAppBarDefaults.topAppBarColors(),
     )
 }
 
-class BeneficiaryDetailScreenUiStatesParameterProvider :
+internal class BeneficiaryDetailScreenUiStatesParameterProvider :
     PreviewParameterProvider<BeneficiaryDetailsUiState> {
     override val values: Sequence<BeneficiaryDetailsUiState>
         get() = sequenceOf(
             BeneficiaryDetailsUiState.Initial,
             BeneficiaryDetailsUiState.Loading,
             BeneficiaryDetailsUiState.DeletedSuccessfully,
-            BeneficiaryDetailsUiState.ShowError(R.string.error_creating_beneficiary)
+            BeneficiaryDetailsUiState.ShowError(R.string.error_creating_beneficiary),
         )
 }
 
 @Composable
-@Preview(showSystemUi = true)
-fun PreviewBeneficiaryDetailScreen(
-    @PreviewParameter(BeneficiaryDetailScreenUiStatesParameterProvider::class) beneficiaryDetailsUiState : BeneficiaryDetailsUiState
+@DevicePreviews
+private fun PreviewBeneficiaryDetailScreen(
+    @PreviewParameter(BeneficiaryDetailScreenUiStatesParameterProvider::class)
+    beneficiaryDetailsUiState: BeneficiaryDetailsUiState,
 ) {
     val beneficiary = Beneficiary(
         id = 1234,
@@ -234,7 +239,7 @@ fun PreviewBeneficiaryDetailScreen(
         clientName = "Tom carl",
         accountType = null,
         transferLimit = 2003030.00,
-        accountNumber = "2345678"
+        accountNumber = "2345678",
     )
     MifosMobileTheme {
         BeneficiaryDetailScreen(
@@ -246,6 +251,3 @@ fun PreviewBeneficiaryDetailScreen(
         )
     }
 }
-
-
-

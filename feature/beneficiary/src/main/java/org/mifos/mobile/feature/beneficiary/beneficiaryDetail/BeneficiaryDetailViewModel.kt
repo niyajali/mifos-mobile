@@ -1,4 +1,13 @@
-package org.mifos.mobile.feature.beneficiary.beneficiary_detail
+/*
+ * Copyright 2024 Mifos Initiative
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * See https://github.com/openMF/mobile-mobile/blob/master/LICENSE.md
+ */
+package org.mifos.mobile.feature.beneficiary.beneficiaryDetail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -15,20 +24,23 @@ import kotlinx.coroutines.launch
 import org.mifos.mobile.core.data.repository.BeneficiaryRepository
 import org.mifos.mobile.core.model.entity.beneficiary.Beneficiary
 import org.mifos.mobile.feature.beneficiary.R
+import org.mifos.mobile.feature.beneficiary.beneficiaryDetail.BeneficiaryDetailsUiState.Initial
 import org.mifos.mobile.feature.beneficiary.navigation.BENEFICIARY_ID
 import javax.inject.Inject
 
 @HiltViewModel
-class BeneficiaryDetailViewModel @Inject constructor(
+internal class BeneficiaryDetailViewModel @Inject constructor(
     private val beneficiaryRepositoryImp: BeneficiaryRepository,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val _beneficiaryDetailsUiStates =
-        MutableStateFlow<BeneficiaryDetailsUiState>(BeneficiaryDetailsUiState.Initial)
+    private val _beneficiaryDetailsUiStates = MutableStateFlow<BeneficiaryDetailsUiState>(Initial)
     val beneficiaryDetailsUiStates: StateFlow<BeneficiaryDetailsUiState> get() = _beneficiaryDetailsUiStates
 
-    private val beneficiaryId = savedStateHandle.getStateFlow<Int?>(key = BENEFICIARY_ID, initialValue = null)
+    private val beneficiaryId = savedStateHandle.getStateFlow<Int?>(
+        key = BENEFICIARY_ID,
+        initialValue = null,
+    )
 
     val beneficiary: StateFlow<Beneficiary?> = beneficiaryId
         .flatMapLatest {
@@ -40,12 +52,8 @@ class BeneficiaryDetailViewModel @Inject constructor(
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
+            initialValue = null,
         )
-
-    fun getBeneficiary(): Beneficiary? {
-        return beneficiary.value
-    }
 
     fun deleteBeneficiary(beneficiaryId: Long?) {
         viewModelScope.launch {
@@ -60,12 +68,9 @@ class BeneficiaryDetailViewModel @Inject constructor(
     }
 }
 
-
-
-sealed class BeneficiaryDetailsUiState {
+internal sealed class BeneficiaryDetailsUiState {
     data object Initial : BeneficiaryDetailsUiState()
     data object Loading : BeneficiaryDetailsUiState()
     data object DeletedSuccessfully : BeneficiaryDetailsUiState()
     data class ShowError(val message: Int) : BeneficiaryDetailsUiState()
 }
-
