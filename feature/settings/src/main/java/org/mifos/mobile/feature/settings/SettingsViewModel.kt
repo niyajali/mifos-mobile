@@ -125,7 +125,7 @@ internal enum class SettingsCardItem(
     ),
 }
 
-internal fun PreferencesHelper.applySavedTheme() {
+fun PreferencesHelper.applySavedTheme() {
     val applicationTheme = AppTheme.entries.find { it.ordinal == this.appTheme }
     AppCompatDelegate.setDefaultNightMode(
         when {
