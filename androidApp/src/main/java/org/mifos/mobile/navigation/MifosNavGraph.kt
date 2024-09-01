@@ -50,8 +50,6 @@ import org.mifos.mobile.feature.qr.navigation.navigateToQrDisplayScreen
 import org.mifos.mobile.feature.qr.navigation.navigateToQrImportScreen
 import org.mifos.mobile.feature.qr.navigation.navigateToQrReaderScreen
 import org.mifos.mobile.feature.qr.navigation.qrNavGraph
-import org.mifos.mobile.feature.transaction.navigation.navigateToRecentTransaction
-import org.mifos.mobile.feature.transaction.navigation.recentTransactionNavGraph
 import org.mifos.mobile.feature.savings.navigation.navigateToSavingsApplicationScreen
 import org.mifos.mobile.feature.savings.navigation.navigateToSavingsDetailScreen
 import org.mifos.mobile.feature.savings.navigation.navigateToSavingsMakeTransfer
@@ -60,10 +58,12 @@ import org.mifos.mobile.feature.settings.navigation.navigateToSettings
 import org.mifos.mobile.feature.settings.navigation.settingsNavGraph
 import org.mifos.mobile.feature.third.party.transfer.third_party_transfer.navigation.navigateToThirdPartyTransfer
 import org.mifos.mobile.feature.third.party.transfer.third_party_transfer.navigation.thirdPartyTransferNavGraph
+import org.mifos.mobile.feature.transaction.navigation.navigateToRecentTransaction
+import org.mifos.mobile.feature.transaction.navigation.recentTransactionNavGraph
 import org.mifos.mobile.feature.transfer.process.navigation.navigateToTransferProcessScreen
 import org.mifos.mobile.feature.transfer.process.navigation.transferProcessNavGraph
-import org.mifos.mobile.feature.update_password.navigation.navigateToUpdatePassword
-import org.mifos.mobile.feature.update_password.navigation.updatePasswordNavGraph
+import org.mifos.mobile.feature.update.password.navigation.navigateToUpdatePassword
+import org.mifos.mobile.feature.update.password.navigation.updatePasswordNavGraph
 import org.mifos.mobile.feature.user_profile.navigation.navigateToUserProfile
 import org.mifos.mobile.feature.user_profile.navigation.userProfileNavGraph
 import org.mifos.mobile.ui.activities.HomeActivity
@@ -109,9 +109,7 @@ fun RootNavGraph(
             navigateToChangePassword = navController::navigateToUpdatePassword
         )
 
-        updatePasswordNavGraph(
-            navController = navController,
-        )
+        updatePasswordNavGraph(navigateBack = navController::popBackStack)
 
         thirdPartyTransferNavGraph(
             navController = navController,
