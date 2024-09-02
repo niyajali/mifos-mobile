@@ -62,10 +62,10 @@ import org.mifos.mobile.feature.transaction.navigation.navigateToRecentTransacti
 import org.mifos.mobile.feature.transaction.navigation.recentTransactionNavGraph
 import org.mifos.mobile.feature.transfer.process.navigation.navigateToTransferProcessScreen
 import org.mifos.mobile.feature.transfer.process.navigation.transferProcessNavGraph
-import org.mifos.mobile.feature.update.password.navigation.navigateToUpdatePassword
-import org.mifos.mobile.feature.update.password.navigation.updatePasswordNavGraph
-import org.mifos.mobile.feature.user_profile.navigation.navigateToUserProfile
-import org.mifos.mobile.feature.user_profile.navigation.userProfileNavGraph
+import org.mifos.mobile.feature.update_password.navigation.navigateToUpdatePassword
+import org.mifos.mobile.feature.update_password.navigation.updatePasswordNavGraph
+import org.mifos.mobile.feature.user.profile.navigation.navigateToUserProfile
+import org.mifos.mobile.feature.user.profile.navigation.userProfileNavGraph
 import org.mifos.mobile.ui.activities.HomeActivity
 import org.mifos.mobile.ui.activities.PassCodeActivity
 
@@ -105,7 +105,7 @@ fun RootNavGraph(
         )
 
         userProfileNavGraph(
-            navController = navController,
+            navigateBack = navController::popBackStack,
             navigateToChangePassword = navController::navigateToUpdatePassword
         )
 
@@ -118,7 +118,7 @@ fun RootNavGraph(
         )
 
         settingsNavGraph(
-            navController = navController,
+            navigateBack = navController::popBackStack,
             changePassword = navController::navigateToUpdatePassword,
             changePasscode = {}, // { navigateToUpdatePasscodeActivity(it, context) },
             navigateToLoginScreen = navController::navigateToLoginScreen,
@@ -151,9 +151,7 @@ fun RootNavGraph(
             navigateToOssLicense = { startActivity(context, OssLicensesMenuActivity::class.java) }
         )
 
-        transferProcessNavGraph(
-            navController = navController
-        )
+        transferProcessNavGraph(navigateBack = navController::popBackStack)
 
         beneficiaryNavGraph(
             navController = navController,
